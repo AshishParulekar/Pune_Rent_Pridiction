@@ -1,1 +1,298 @@
 
+
+import pandas as pd 
+import warnings
+warnings.filterwarnings('ignore')
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import OneHotEncoder,LabelEncoder
+
+
+
+
+
+Data=pd.read_csv('Pune_rent.csv')
+Data.shape
+Data.info()
+
+Data_new=Data.drop_duplicates()
+
+Data_new.shape
+
+Data_new.isnull().sum()
+
+Data_new.dropna()
+
+Data_new.isnull().sum()
+
+Data_new.shape
+
+Data_new.reset_index(inplace=True)
+
+for i in Data_new:
+    print(Data_new[i].value_counts())
+
+
+inde=set( )
+y=['East facing','West facing','Grfloor','North facing','1 of 2floor','NorthEast facing','11 of 11floor','1 of 3floor']
+for i in range(len(Data_new['bathroom'])):
+    x=Data_new['bathroom'].iloc[i]
+    if (x in y ):
+        #print(x)
+        #print(i)
+        inde.add(i)        
+inde=list(inde)
+len(inde)
+Data_new.drop(inde,axis=0,inplace=True)
+
+Data_new.shape
+
+Data_new['bathroom'].value_counts()
+
+
+Data_new.isnull().sum()
+
+Data_new.dropna(inplace=True)
+
+print(Data_new.isnull().sum())
+print(Data_new.shape)
+
+Data_new.columns
+
+lit=[]
+for i in (Data_new['price']):
+    if (','in i):
+        l=i.split(',')
+        L=l[0]+l[1]
+        lit.append(float(L))
+    else:
+        lit.append(float(i))
+
+
+len(lit)
+
+
+Data_new
+
+Data_new['price']=lit
+
+Data_new.isnull().any()
+
+outlier=Data_new[Data_new['price']<33000]
+
+sns.boxplot(outlier['price'])
+
+outlier.shape
+
+Outlier_percentage=((Data_new.shape[0]-outlier.shape[0])/Data_new.shape[0]*100)
+Outlier_percentage
+
+outlier.head(1)
+
+
+outlier.drop('index',axis=1,inplace=True)
+
+
+# In[ ]:
+
+
+outlier.isnull().sum()
+
+
+# In[ ]:
+
+
+outlier.shape
+
+
+# In[ ]:
+
+
+print(outlier['seller_type'].value_counts())
+print(outlier['bedroom'].value_counts())
+print(outlier['layout_type'].value_counts())
+print(outlier['property_type'].value_counts())
+
+
+# # Encoding_technique
+
+# In[ ]:
+
+
+outlier.head(2)
+
+
+# In[ ]:
+
+
+ONE=outlier.drop(['price','area'],axis=1)
+
+
+# In[ ]:
+
+
+ONE=pd.get_dummies(ONE,drop_first=True)
+
+
+# In[ ]:
+
+
+ONE.shape
+
+
+# In[ ]:
+
+
+ONE.reset_index(inplace=True,drop=True)
+ONE
+ONE.isnull().sum()
+
+
+# In[ ]:
+
+
+outlier.isnull().sum()
+
+
+# In[ ]:
+
+
+#L=LabelEncoder()
+#La=L.fit_transform(Label)
+#La=pd.DataFrame(La,columns=['Locality'])
+#La.reset_index(inplace=True,drop=True)
+#print(La.isnull().sum())
+#La
+
+
+# In[ ]:
+
+
+value=outlier['area']
+value.reset_index(drop=True,inplace=True)
+value.shape
+
+
+# In[ ]:
+
+
+x=pd.concat([value,ONE],axis=1)
+x.reset_index(drop=True,inplace=True)
+x
+
+
+# In[ ]:
+
+
+x.isnull().sum()
+
+
+# In[ ]:
+
+
+y=outlier['price']
+y.reset_index(drop=True)
+
+
+# # Feature_selection
+
+# In[ ]:
+
+
+x.corr()
+plt.figure(figsize=(10,8))
+sns.heatmap(x.corr())
+
+
+# In[ ]:
+
+
+from sklearn.model_selection import train_test_split
+
+
+# In[ ]:
+
+
+print(x.shape)
+print(y.shape)
+
+
+# In[ ]:
+
+
+x_train_s,x_test_shuffle,y_train,y_test_shuffle=train_test_split(x,y,test_size=10)
+
+
+# In[ ]:
+
+
+x_train,x_test,y_train,y_test=train_test_split(x,y,train_size=70)
+
+
+# # RANDOM FOREST REGRESSION
+
+# In[ ]:
+
+
+from sklearn.ensemble import RandomForestRegressor
+
+
+# In[ ]:
+
+
+Random=RandomForestRegressor()
+
+
+# In[ ]:
+
+
+RFR=Random.fit(x,y)
+RFR
+
+
+# In[ ]:
+
+
+Random.predict(x_test_shuffle)
+
+
+# In[ ]:
+
+
+RAND_pri=Random.predict(x_test_shuffle)
+RAND_pri
+
+
+# In[ ]:
+
+
+Random_Forest_regression=Random.score(x_test_shuffle,y_test_shuffle)
+Random_Forest_regression
+
+
+# In[ ]:
+
+
+sns.scatterplot(x_test_shuffle.index,y_test_shuffle)
+sns.scatterplot(x_test_shuffle.index,RAND_pri)
+
+
+# In[ ]:
+
+
+import pickle
+
+
+# In[ ]:
+
+
+import os as os
+
+
+# In[ ]:
+
+
+os.chdir('C:\\Users\\Ashish_Parulekar\\PYTHON_FILES\\DIPLOYMENT\\PUNE_RENT_APP'
+#save=pickle.dumps('C:\\Users\\Ashish_Parulekar\\PYTHON_FILES\\Project_2_Pune_rent_Regression_Model\\DIP_PUNE_RENT.pkl')
+
+pickle.dump(Random,open('Pune_Rent_App.pkl', 'wb'))
